@@ -1,0 +1,31 @@
+<button on:click=onClick(event)>{label}</button>
+
+<style>
+    button {
+        background: linear-gradient(to right, #9d50bb, #6e48aa);
+        border: none;
+        border-radius: 4px;
+        color: #FFFFFF;
+        cursor: pointer;
+        display: inline-block;
+		font-weight: 600;
+        padding: 0.5rem 1rem;
+        transition: all 0.2s ease-in-out;
+    }
+
+    button:focus,
+    button:hover {
+        transform: scale(1.1);
+    }
+</style>
+
+<script>
+    export default {
+        methods: {
+            onClick(event) {
+                event.stopPropagation()
+                this.fire('click')
+            }
+        }
+    }
+</script>

@@ -1,0 +1,145 @@
+<div class="player {isExpanded ? 'player-is-expanded' : ''}" on:click=onClick()>
+    <div class="container">
+        <p class="name">{player.name}</p>
+        <div class="progress">
+            <div class="progress-bar" style="width: {progress}%;"></div>
+        </div>
+        <p class="score"><span>{progress}%</span> Completed of {started} played</p>
+    </div>
+    {#if isExpanded}
+    <Games
+        games={player.games || []}
+        on:complete=onCompleteGame(event)
+        on:remove=onRemoveGame(event)
+        on:newGame=onNewGame(event)
+    />
+    {/if}
+</div>
+
+<style>
+    .container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .name {
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .player {
+        border: 1px solid transparent;
+        padding: 2rem 1rem;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .player-is-expanded {
+        background: rgba(0, 0, 0, 0.25);
+        border-color: #232526;
+        border-radius: 4px;
+        margin: 0 1rem;
+    }
+
+    .player:hover {
+        background: rgba(0, 0, 0, 0.25);
+        cursor: pointer;
+    }
+
+    .progress {
+        background: linear-gradient(to left, #232526, #414345);
+        border-radius: 2px;
+        height: 0.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .progress-bar {
+        background: linear-gradient(to right, #fc466b, #3f5efb);
+        border-radius: 2px;
+        height: 100%;
+    }
+
+    .score {
+        align-items: center;
+        display: flex;
+        flex-direction: row;
+        font-weight: 600;
+    }
+
+    .score > span {
+        font-size: 1.5rem;
+        margin-right: 0.5rem;
+    }
+</style>
+
+<script>
+import Games from './Games.html'
+
+export default {
+    components: {
+        Games
+    },
+
+    data() {
+        return {
+            isExpanded: false,
+            player: {}
+        }
+    },
+
+    computed: {
+        progress({ player }) {
+            if (player.games) {
+                const started = player.games.length
+                const completed = player.games.filter(game => game.completed).length
+                return Math.round(completed/started * 100)
+            }
+
+            return 0
+        },
+
+        started({ player }) {
+            return player.games ? player.games.length : 0
+        }
+    },
+
+    methods: {
+        onClick() {
+            this.set({ isExpanded: !this.get().isExpanded })
+        },
+
+        onCompleteGame({ game }) {
+            const { player } = this.get()
+            const gameToUpdate = player.games.find(currentGame => currentGame.name === game.name)
+
+            if (gameToUpdate) {
+                gameToUpdate.completed = Date.now()
+            }
+
+            this.fire('updated', { player })
+        },
+
+        onRemoveGame({ game }) {
+            const { player } = this.get()
+            player.games = player.games.filter(playedGame => playedGame.name !== game.name)
+
+            this.fire('updated', { player })
+        },
+
+        onNewGame({ game }) {
+            if (game) {
+                const { player } = this.get()
+                if (!player.games) {
+                    player.games = []
+                }
+
+                player.games.push({
+                    name: game,
+                    started: Date.now()
+                })
+
+                this.fire('updated', { player })
+            }
+        }
+    }
+}
+</script>

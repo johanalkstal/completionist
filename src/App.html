@@ -1,0 +1,91 @@
+<h1 class="title">The Completionist Challenge 2019</h1>
+
+<div class="player-area">
+	<div class="new-player-button">
+		<Button on:click=onNewPlayerClick() label="New player"/>
+	</div>
+	{#if showNewPlayer}
+	<Form id="newPlayerName" label="What's your name?" buttonLabel="Join" on:click=onCreateNewPlayer(event)/>
+	{/if}
+</div>
+
+<ol>
+	{#each players as player}
+	<li>
+		<Player player={player} on:updated=onPlayerUpdated(event)/>
+	</li>
+	{/each}
+</ol>
+
+<style>
+	.new-player-button {
+		margin-bottom: 1rem;
+	}
+
+	.player-area {
+		margin-bottom: 2rem;
+		margin-left: 1rem;
+	}
+</style>
+
+<script>
+	import Button from './Button.html'
+	import Form from './Form.html'
+	import Player from './Player.html'
+
+	export default {
+		components: {
+			Button,
+			Form,
+			Player
+		},
+
+		data() {
+			return {
+				newPlayerName: '',
+				showNewPlayer: false
+			}
+		},
+
+		methods: {
+			onCreateNewPlayer({ value }) {
+				if (value) {
+					const uid = `${value}-${Date.now()}`
+					const ref = firebase.database().ref(`players/${uid}`)
+					ref.set({
+						uid,
+						name: value,
+						games: []
+					}, (err) => {
+						if (err) {
+							console.log('Db update failed', err)
+							return
+						}
+
+						this.set({
+							showNewPlayer: false
+						})
+					})
+				}
+			},
+
+			onPlayerUpdated({ player }) {
+				if (player) {
+					const ref = firebase.database().ref(`players/${player.uid}`)
+					ref.set(player, (err) => {
+						if (err) {
+							console.log('Db update failed', err)
+							return
+						}
+					})
+				}
+			},
+
+			onNewPlayerClick() {
+				this.set({
+					showNewPlayer: true
+				})
+			}
+		}
+	}
+</script>

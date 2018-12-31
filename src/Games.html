@@ -1,0 +1,98 @@
+<div class="games">
+    <ul>
+        {#each games as game}
+        <li>
+            <div>
+                <p>{game.name}</p>
+                <span>Started {format(game.started)}</span>
+                {#if game.completed}
+                <span>- Completed {format(game.completed)}</span>
+                {/if}
+            </div>
+            <div>
+                {#if !game.completed}
+                <Button on:click=onCompleteGame(game) label="Complete"/>
+                {/if}
+                <Button on:click=onRemoveGame(game) label="X"/>
+            </div>
+        </li>
+        {/each}
+    </ul>
+
+    <Button on:click=onShowAddGame() label="Add game"/>
+    {#if showAddGame}
+    <div class="form">
+        <Form id="newGameName" label="Which game?" buttonLabel="Add" on:click=onCreateNewGame(event)/>
+    </div>
+    {/if}
+</div>
+
+<style>
+    .form {
+        margin-top: 2rem;
+    }
+
+    .games {
+        margin-top: 2rem;
+    }
+
+    li {
+        align-items: flex-start;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+    }
+
+    p {
+        margin-bottom: 0.5rem;
+    }
+
+    span {
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+</style>
+
+<script>
+    import Button from './Button.html'
+    import Form from './Form.html'
+
+    export default {
+        components: {
+            Button,
+            Form
+        },
+
+        data() {
+            return {
+                showAddGame: false
+            }
+        },
+
+        methods: {
+            onCompleteGame(game) {
+                this.fire('complete', { game })
+            },
+
+            onCreateNewGame({ value }) {
+                this.fire('newGame', { game: value })
+                this.set({ showAddGame: false })
+            },
+
+            onRemoveGame(game) {
+                this.fire('remove', { game })
+            },
+
+            onShowAddGame() {
+                this.set({ showAddGame: true })
+            }
+        },
+
+        helpers: {
+            format(date) {
+                return dateFns.format(date, 'DD MMMM')
+            }
+        }
+    }
+</script>
